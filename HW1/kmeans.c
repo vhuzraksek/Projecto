@@ -205,7 +205,7 @@ double** parseInputFile(int N, int d){
             if (scanf("%lf%c", &n1, &c) != 2){
                 printf("Error reading the %d,%d element of the input matrix.\n",i,j);
                 free_double_mat(input, N);
-                return 0;
+                return NULL;
             }
             /*Fill in the matrix*/
             input[i][j]=n1;
@@ -214,6 +214,8 @@ double** parseInputFile(int N, int d){
     /*Check if there is still some output in the buffer*/
     if (scanf("%lf%c", &n1, &c) == 2) {
         printf("Warning: Too many numbers in input.\n");
+        free_double_mat(input, N);
+        return NULL;
     }
     return input;
 }
@@ -232,7 +234,7 @@ int main(int argc, char *argv[]) {
     d=atoi(argv[3]);
     MAX_ITER=atoi(argv[4]);
     input = parseInputFile(N, d);
-    if (input==0){
+    if (input==NULL){
         /*Invalid input*/
         return 0;
     }
