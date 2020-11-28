@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <assert.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -119,10 +120,17 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
 
     /*1. malloc & init*/
     diffResult = (double *)malloc(N * sizeof(double));
+    assert(diffResult!=NULL);
     newCentroidVec = (double *)malloc(d * sizeof(double));
+    assert(newCentroidVec!=NULL);
     input2CentMapping = (int *)malloc(N * sizeof(int));
+    assert(input2CentMapping!=NULL);
     centroids = (double **)malloc(K * sizeof(double*));
-    for(i = 0; i < K; i++) centroids[i] = (double *)malloc(d * sizeof(double));
+    assert(centroids!=NULL);
+    for(i = 0; i < K; i++){
+        centroids[i] = (double *)malloc(d * sizeof(double));
+        assert(centroids[i]!=NULL);
+    }
     init_centroids(centroids, input, K, d);
     init_input2CentMapping(input2CentMapping, N);
 
@@ -185,7 +193,11 @@ double** parseInputFile(int N, int d){
     double n1;
     char c;
     double **input = (double **)malloc(N * sizeof(double*));
-    for(i = 0; i < N; i++) input[i] = (double *)malloc(d * sizeof(double));
+    assert(input!=NULL);
+    for(i = 0; i < N; i++){
+        input[i] = (double *)malloc(d * sizeof(double));
+        assert(input[i]!=NULL);
+    }
 
     for(i = 0; i < N; i++){
         for(j = 0; j < d; j++){
