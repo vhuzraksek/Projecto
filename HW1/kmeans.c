@@ -241,7 +241,7 @@ int main(int argc, char *argv[]) {
     /*Actual logic of the algorithm*/
     centroids = kmeans(K, N, d, MAX_ITER, input);
 
-    /*Print and free input/output of the kmeans algorithm*/
+    /*Print and free input/output of the k-means algorithm*/
     print_double_mat(centroids, K, d);
     free_double_mat(centroids, K);
     free_double_mat(input, N);
