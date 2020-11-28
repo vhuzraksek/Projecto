@@ -6,13 +6,13 @@
 #define FALSE 0
 
 /*Print a matrix (of doubles) of size mxn */
-void print_double_mat(int m, int n, double** mat){
+void print_double_mat(double** mat, int m, int n){
     int i=0;
     int j=0;
     for (i=0; i<m; i++){
         for (j=0; j<n; j++){
             printf("%.2f", mat[i][j]);
-            if (i<n-1){
+            if (j<n-1){
                 //If this is not the last line, print a comma
                 printf(",");
             }
@@ -85,7 +85,7 @@ double norm2(double* x, int vecSize){
 }
 
 /* Initialize the centroids with the K first input vectors */
-void init_centroids(int** centroids, int** input, int K, int d){
+void init_centroids(double** centroids, double** input, int K, int d){
     int i=0;
     for (i=0; i<K; i++){
         vecAssign(input[i],centroids[i],d);
@@ -176,8 +176,11 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
 /* Verify that args are OK */
 int checkArgs(int argc, char *argv[]){
     int i=0;
-    if (argc!=7) {
+    if (argc!=5) {
         printf("Error, expected 7 arguments but %d were provided:\n\n",argc);
+        for (i = 0; i < argc; ++i) {
+            printf("%s\n", argv[i]);
+        }
         //TODO: Check things about the input, such as < char
         return 0;
     }
@@ -197,8 +200,8 @@ double** parseInputFile(int N, int d){
         for(j = 0; j < d; j++){
             //Check if next read input is invalid
             if (scanf("%lf%c", &n1, &c) != 2){
-                printf("Error reading the %d,%d element of the input matrix.",i,j);
-                free_double_mat(N,input);
+                printf("Error reading the %d,%d element of the input matrix.\n",i,j);
+                free_double_mat(input, N);
                 return 0;
             }
             //Fill in the matrix
@@ -206,7 +209,7 @@ double** parseInputFile(int N, int d){
         }
     }
     if (scanf("%lf%c", &n1, &c) == 2) {
-        printf("Warning: Too many numbers in input.");
+        printf("Warning: Too many numbers in input.\n");
     }
     return input;
 }
@@ -217,22 +220,21 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     //Get data
-    int K=atoi(argv[0]);
-    int N=atoi(argv[1]);
-    int d=atoi(argv[2]);
-    int MAX_ITER=atoi(argv[3]);
-    printf("input was validated and is in place.");
+    int K=atoi(argv[1]);
+    int N=atoi(argv[2]);
+    int d=atoi(argv[3]);
+    int MAX_ITER=atoi(argv[4]);
     double** input = parseInputFile(N, d);
     if (input==0){
         //Invalid input
         return 0;
     }
-    printf("input was validated and is in place.");
+    printf("input was validated and is in place.\n");
     //Heart of the execution
     double** centroids = kmeans(K, N, d, MAX_ITER, input);
 
     //Print and free input/output of the kmeans algorithm
-    print_double_mat(K, d, centroids);
-    free_double_mat(K, centroids);
-    free_double_mat(N, input);
+    print_double_mat(centroids, K, d);
+    free_double_mat(centroids, K);
+    free_double_mat(input, N);
 }
