@@ -150,7 +150,7 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
         /*B) Update centroids*/
         for (j = 0; j < K; ++j) {
             clusterSize=0;
-            memset(newCentroidVec, 0, d);
+            memset(newCentroidVec, 0, d*sizeof(newCentroidVec[0]));
             for (i = 0; i < N; ++i) {
                 if (input2CentMapping[i]==j){
                     clusterSize+=1;
