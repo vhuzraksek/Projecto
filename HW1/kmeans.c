@@ -12,7 +12,7 @@ void print_double_mat(double** mat, int m, int n){
         for (j=0; j<n; j++){
             printf("%.2f", mat[i][j]);
             if (j<n-1){
-                /*If this is not the last line, print a comma*/
+                /*If this is not the last item in line, print a comma*/
                 printf(",");
             }
         }
@@ -58,7 +58,7 @@ void vecDiff(double* a, double* b, double* result, int d){
     return;
 }
 
-/*Calculate the difference between two vectors (of doubles), c=(a-b) of length d,
+/*Calculate the sum between two vectors (of doubles), c=(a-b) of length d,
  * in place into result vector */
 void vecSum(double* a, double* b, double* result, int d){
     int i;
@@ -122,7 +122,7 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
     int clusterSize;
     double* newCentroidVec;
 
-    /*Kmeans vars*/
+    /*K-means vars*/
     int* input2CentMapping;
     double** centroids;
 
@@ -176,9 +176,7 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
     return centroids;
 }
 
-/* Verify that args are OK*/
 /*TODO: Check things about the input, such as < char*/
-/*TODO: Also make sure how to calculate the amount of vars! CLion says 7 but it doesn't really work, terminal says 5.*/
 int checkArgs(int argc, char *argv[]){
     int i;
     if (argc!=5) {
