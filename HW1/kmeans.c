@@ -13,7 +13,7 @@ void print_double_mat(double** mat, int m, int n){
         for (j=0; j<n; j++){
             printf("%.2f", mat[i][j]);
             if (j<n-1){
-                //If this is not the last line, print a comma
+                /*If this is not the last line, print a comma*/
                 printf(",");
             }
         }
@@ -22,7 +22,7 @@ void print_double_mat(double** mat, int m, int n){
 }
 /*Free a matrix (of doubles with m rows) memory allocation */
 int free_double_mat(double** mat, int m){
-    //TODO: Implement verification (check if something went wrong)
+    /*TODO: Implement verification (check if something went wrong)*/
     int i=0;
     for (i=0; i<m; i++){
             free(mat[i]);
@@ -108,35 +108,40 @@ void init_input2CentMapping(int* input2CentMapping, int N){
 
 /* Logic of the kmeans calculation */
 double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
-    //Iteration Variables
+    /*Iteration Variables*/
     int iter=0;
     int i=0;
     int j=0;
 
-    //Temp vars 2A
+    /*Temp vars 2A*/
     double minDistance=0;
     int minCentroidIndex = 0;
     double currentDistance=0;
     int changeHappened=TRUE;
-    double* diffResult = (double *)malloc(N * sizeof(double));
+    double* diffResult;
 
-    //Temp vars for 2B
+    /*Temp vars for 2B*/
     int clusterSize = 0;
-    double* newCentroidVec = (double *)malloc(d * sizeof(double));
-    initVectorZeros(newCentroidVec, d);
+    double* newCentroidVec;
 
-    //1. K means vars malloc & init
-    double** centroids = (double **)malloc(K * sizeof(double*));
+    /*Kmeans vars*/
+    int* input2CentMapping;
+    double** centroids;
+
+    /*1. malloc & init*/
+    diffResult = (double *)malloc(N * sizeof(double));
+    newCentroidVec = (double *)malloc(d * sizeof(double));
+    centroids = (double **)malloc(K * sizeof(double*));
     for(i = 0; i < K; i++) centroids[i] = (double *)malloc(d * sizeof(double));
     init_centroids(centroids, input, K, d);
-    int* input2CentMapping = (int *)malloc(N * sizeof(int));
+    input2CentMapping = (int *)malloc(N * sizeof(int));
     init_input2CentMapping(input2CentMapping, N);
 
-    //2. Iterations
+    /*2. Iterations*/
     for (iter = 0; iter < MAX_ITER || changeHappened; ++iter) {
         changeHappened=FALSE;
 
-        //A) Assign inputs to centroids
+        /*A) Assign inputs to centroids*/
         for (i = 0; i < N; ++i) {
             for (j = 0; j < K; ++j) {
                 vecDiff(input[i], centroids[j], diffResult, d);
@@ -151,7 +156,7 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
                 input2CentMapping[i]=minCentroidIndex;
             }
         }
-        //B) Update centroids
+        /*B) Update centroids*/
         for (j = 0; j < K; ++j) {
             clusterSize=0;
             initVectorZeros(newCentroidVec, d);
@@ -165,7 +170,7 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
             vecAssign(newCentroidVec,centroids[j], d);
         }
     }
-    //Free all local memory
+    /*Free all local memory*/
     free(diffResult);
     free(newCentroidVec);
     free(input2CentMapping);
@@ -173,21 +178,22 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
     return centroids;
 }
 
-/* Verify that args are OK */
+/* Verify that args are OK*/
+/*TODO: Check things about the input, such as < char*/
+/*TODO: Also make sure how to calculate the amount of vars! CLion says 7 but it doesn't really work, terminal says 5.*/
 int checkArgs(int argc, char *argv[]){
     int i=0;
     if (argc!=5) {
-        printf("Error, expected 7 arguments but %d were provided:\n\n",argc);
+        printf("Error, expected 5 arguments but %d were provided:\n\n",argc);
         for (i = 0; i < argc; ++i) {
             printf("%s\n", argv[i]);
         }
-        //TODO: Check things about the input, such as < char
         return 0;
     }
     return 1;
 }
 
-/* Get input into matrix */
+/* Stream input into new matrix */
 double** parseInputFile(int N, int d){
     int i=0;
     int j=0;
@@ -198,13 +204,13 @@ double** parseInputFile(int N, int d){
 
     for(i = 0; i < N; i++){
         for(j = 0; j < d; j++){
-            //Check if next read input is invalid
+            /*Check if next read input is invalid*/
             if (scanf("%lf%c", &n1, &c) != 2){
                 printf("Error reading the %d,%d element of the input matrix.\n",i,j);
                 free_double_mat(input, N);
                 return 0;
             }
-            //Fill in the matrix
+            /*Fill in the matrix*/
             input[i][j]=n1;
         }
     }
@@ -216,25 +222,28 @@ double** parseInputFile(int N, int d){
 
 /* Main, takes care of the execution and system related tasks */
 int main(int argc, char *argv[]) {
+    int K, N, d, MAX_ITER;
+    double** input;
+    double** centroids;
     if (checkArgs(argc, argv)==0){
         return 0;
     }
-    //Get data
-    int K=atoi(argv[1]);
-    int N=atoi(argv[2]);
-    int d=atoi(argv[3]);
-    int MAX_ITER=atoi(argv[4]);
-    double** input = parseInputFile(N, d);
+    /*Get data*/
+    K=atoi(argv[1]);
+    N=atoi(argv[2]);
+    d=atoi(argv[3]);
+    MAX_ITER=atoi(argv[4]);
+    input = parseInputFile(N, d);
     if (input==0){
-        //Invalid input
+        /*Invalid input*/
         return 0;
     }
-    printf("input was validated and is in place.\n");
-    //Heart of the execution
-    double** centroids = kmeans(K, N, d, MAX_ITER, input);
+    /*Heart of the execution*/
+    centroids = kmeans(K, N, d, MAX_ITER, input);
 
-    //Print and free input/output of the kmeans algorithm
+    /*Print and free input/output of the kmeans algorithm*/
     print_double_mat(centroids, K, d);
     free_double_mat(centroids, K);
     free_double_mat(input, N);
+    return 1;
 }
