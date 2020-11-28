@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <string.h>
 #include <assert.h>
 
 #define TRUE 1
@@ -38,6 +37,14 @@ void vecAssign(double *from, double *to, int vecSize) {
         to[i] = from[i];
     }
     return;
+}
+
+/*Initialize vector with zeros, in-place function*/
+void initVectorZeros(double* vector, int vecSize){
+    int i;
+    for (i = 0; i < vecSize; ++i) {
+        vector[i]=0;
+    }
 }
 
     /*Calculate the difference between two vectors (of doubles), c=(a-b) of length d,
@@ -156,7 +163,7 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
         /*B) Update centroids*/
         for (j = 0; j < K; ++j) {
             clusterSize=0;
-            memset(newCentroidVec, 0, d*sizeof(newCentroidVec[0]));
+            initVectorZeros(newCentroidVec, d);
             for (i = 0; i < N; ++i) {
                 if (input2CentMapping[i]==j){
                     clusterSize+=1;
