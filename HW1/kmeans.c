@@ -21,9 +21,7 @@ void print_double_mat(double** mat, int m, int n){
     }
 }
 /*Free a matrix (of doubles with m rows) memory allocation */
-/*TODO: Not sure if this is correct. Maybe I needed to pass a pointer to the arr?*/
 int free_double_mat(double** mat, int m){
-    /*TODO: Implement verification (check if something went wrong)*/
     int i;
     for (i=0; i<m; i++){
             free(mat[i]);
@@ -169,7 +167,6 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
     return centroids;
 }
 
-/*TODO: Check things about the input, such as < char*/
 int checkArgs(int argc, char *argv[]){
     int i;
     if (argc!=5) {
@@ -202,6 +199,7 @@ double** parseInputFile(int N, int d){
             input[i][j]=n1;
         }
     }
+    /*Check if there is still some output in the buffer*/
     if (scanf("%lf%c", &n1, &c) == 2) {
         printf("Warning: Too many numbers in input.\n");
     }
