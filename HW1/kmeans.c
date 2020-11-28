@@ -106,30 +106,76 @@ void init_input2CentMapping(int* input2CentMapping, int N){
     return;
 }
 
-/* Logic of the kmeans calculation */
-double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
+int mapInputCentroid(int K, int N, int d, double **input, double **centroids, int* input2CentMapping) {
     /*Iteration Variables*/
-    int iter, i, j;
+    int i, j;
 
     /*Temp vars 2A*/
     double minDistance,currentDistance;
     int minCentroidIndex;
-    int changeHappened=TRUE;
+    int changeHappened=FALSE;
     double* diffResult;
+
+    /*1. malloc & init*/
+    diffResult = (double *)malloc(N * sizeof(double));
+    assert(diffResult!=NULL);
+
+    /*A) Assign inputs to centroids*/
+    for (i = 0; i < N; ++i) {
+        for (j = 0; j < K; ++j) {
+            vecDiff(input[i], centroids[j], diffResult, d);
+            currentDistance = norm2(diffResult, d);
+            if (j==0 || currentDistance < minDistance){
+                minDistance = currentDistance;
+                minCentroidIndex = j;
+            }
+        }
+        if (input2CentMapping[i]!=minCentroidIndex){
+            changeHappened=TRUE;
+            input2CentMapping[i]=minCentroidIndex;
+        }
+    }
+    /*Free all local memory*/
+    free(diffResult);
+
+    return changeHappened;
+}
+
+void updateCentroids(int K, int N, int d, double **input, double **centroids, int* input2CentMapping) {
+    /*Iteration Variables*/
+    int i, j;
 
     /*Temp vars for 2B*/
     int clusterSize;
     double* newCentroidVec;
 
-    /*K-means vars*/
+    /*1. malloc & init*/
+    newCentroidVec = (double *)malloc(d * sizeof(double));
+    assert(newCentroidVec!=NULL);
+
+    for (j = 0; j < K; ++j) {
+        clusterSize=0;
+        initVectorZeros(newCentroidVec, d);
+        for (i = 0; i < N; ++i) {
+            if (input2CentMapping[i]==j){
+                clusterSize+=1;
+                vecSum(newCentroidVec, input[i], newCentroidVec, d);
+            }
+        }
+        vecDiv(newCentroidVec, d, clusterSize);
+        vecAssign(newCentroidVec,centroids[j], d);
+    }
+    free(newCentroidVec);
+}
+
+/* Logic of the kmeans calculation */
+double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
+    int iter, i;
+    int changeHappened=TRUE;
     int* input2CentMapping;
     double** centroids;
 
     /*1. malloc & init*/
-    diffResult = (double *)malloc(N * sizeof(double));
-    assert(diffResult!=NULL);
-    newCentroidVec = (double *)malloc(d * sizeof(double));
-    assert(newCentroidVec!=NULL);
     input2CentMapping = (int *)malloc(N * sizeof(int));
     assert(input2CentMapping!=NULL);
     centroids = (double **)malloc(K * sizeof(double*));
@@ -143,40 +189,10 @@ double** kmeans(int K, int N, int d, int MAX_ITER, double** input){
 
     /*2. Iterations*/
     for (iter = 0; iter < MAX_ITER || changeHappened; ++iter) {
-        changeHappened=FALSE;
-
-        /*A) Assign inputs to centroids*/
-        for (i = 0; i < N; ++i) {
-            for (j = 0; j < K; ++j) {
-                vecDiff(input[i], centroids[j], diffResult, d);
-                currentDistance = norm2(diffResult, d);
-                if (j==0 || currentDistance < minDistance){
-                    minDistance = currentDistance;
-                    minCentroidIndex = j;
-                }
-            }
-            if (input2CentMapping[i]!=minCentroidIndex){
-                changeHappened=TRUE;
-                input2CentMapping[i]=minCentroidIndex;
-            }
-        }
-        /*B) Update centroids*/
-        for (j = 0; j < K; ++j) {
-            clusterSize=0;
-            initVectorZeros(newCentroidVec, d);
-            for (i = 0; i < N; ++i) {
-                if (input2CentMapping[i]==j){
-                    clusterSize+=1;
-                    vecSum(newCentroidVec, input[i], newCentroidVec, d);
-                }
-            }
-            vecDiv(newCentroidVec, d, clusterSize);
-            vecAssign(newCentroidVec,centroids[j], d);
-        }
+        changeHappened = mapInputCentroid(K, N, d, input, centroids, input2CentMapping);
+        updateCentroids(K, N, d, input, centroids, input2CentMapping);
     }
     /*Free all local memory*/
-    free(diffResult);
-    free(newCentroidVec);
     free(input2CentMapping);
 
     return centroids;
