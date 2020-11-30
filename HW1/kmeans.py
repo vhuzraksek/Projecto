@@ -70,8 +70,9 @@ def init_centroids(points, K, d):
 	# Initialize all centroids, creating NoneCentroids for the points without a centroid
 	centroids = tuple(Cluster(point, d) for point in points[:K])
 	points_to_centroids = {point:centroid for (point, centroid) in zip(points, centroids)}
+	NONE_CENTROID = NoneCluster()
 	for point in points[K:]:
-		points_to_centroids[point] = NoneCluster()
+		points_to_centroids[point] = NONE_CENTROID
 	return centroids, points_to_centroids
 
 def kmeans(centroids, points_to_centroids):
