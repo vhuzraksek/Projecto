@@ -1,8 +1,8 @@
 import argparse
 import math
 
-class Centroid(object):
-	# Centroid class for holding points as centroid
+class Cluster(object):
+	# Cluster class for holding points as centroid
 	def __init__(self, center, dims): 
 		self.dims = dims
 		self.center = center
@@ -25,12 +25,10 @@ class Centroid(object):
 		self.axis_sums = [p1 - p2 for (p1, p2) in zip(self.axis_sums, point)]
 		self.center = tuple([axis / len(self.points) for axis in self.axis_sums])
 
-class NoneCentroid(object):
-	# NoneCentroid class for first iteration
+class NoneCluster(object):
+	# NoneCluster class for first iteration
 	def __init__(self):
 		self.center = None
-		self.points = None
-		self.axis_sums = None
 
 	def distance(self, point):
 		return math.inf
@@ -70,10 +68,10 @@ def parse_input():
 
 def init_centroids(points, K, d):
 	# Initialize all centroids, creating NoneCentroids for the points without a centroid
-	centroids = tuple(Centroid(point, d) for point in points[:K])
+	centroids = tuple(Cluster(point, d) for point in points[:K])
 	points_to_centroids = {point:centroid for (point, centroid) in zip(points, centroids)}
 	for point in points[K:]:
-		points_to_centroids[point] = NoneCentroid()
+		points_to_centroids[point] = NoneCluster()
 	return centroids, points_to_centroids
 
 def kmeans(centroids, points_to_centroids):
@@ -85,7 +83,7 @@ def kmeans(centroids, points_to_centroids):
 		for centroid in centroids:
 			# Calculate what centroid is the closest to a point
 			dst = centroid.distance(point)
-			if min_dst > dst:
+			if dst < min_dst:
 				min_dst = dst
 				designated_centroid = centroid
 		if points_to_centroids[point] != designated_centroid:
@@ -110,7 +108,8 @@ def run_kmeans(centroids, points, MAX_ITER):
 def main():
 	K, N, d, MAX_ITER, points = parse_input()
 	centroids, points_to_centroids = init_centroids(points, K, d)
-	for centroid in run_kmeans(centroids, points_to_centroids, MAX_ITER):
+	centroids = run_kmeans(centroids, points_to_centroids, MAX_ITER):
+	for centroid in centroids:
 		print(",".join([str(axis) for axis in centroid.center]))
 
 
