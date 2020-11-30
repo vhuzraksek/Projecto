@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <assert.h>
 
 #define TRUE 1
@@ -81,7 +80,7 @@ double norm2(double* x, int vecSize){
     for (i=0; i < vecSize; i++){
         sumOfSquares += x[i]*x[i];
     }
-    return sqrt(sumOfSquares);
+    return sumOfSquares;
 }
 
 /* Initialize the centroids with the K first input vectors */

@@ -1,5 +1,4 @@
 import argparse
-import math
 
 class Cluster(object):
 	# Cluster class for holding points as centroid
@@ -11,7 +10,7 @@ class Cluster(object):
 
 	def distance(self, point):
 		# Calculate distance from point to center
-		return math.sqrt(sum([(p1 - p2) ** 2 for (p1 , p2) in zip(self.center, point)]))
+		return sum([(p1 - p2) ** 2 for (p1 , p2) in zip(self.center, point)])
 
 	def add_point(self, point):
 		# Add point and recalculate center
@@ -31,7 +30,7 @@ class NoneCluster(object):
 		self.center = None
 
 	def distance(self, point):
-		return math.inf
+		return float("inf")
 	
 	def remove_point(self, point):
 		pass
@@ -79,7 +78,7 @@ def kmeans(centroids, points_to_centroids):
 	change_dict = {}
 	# Createing a dict containing a mapping from a point, to new centroid if changed
 	for point in points_to_centroids.keys():
-		min_dst = math.inf
+		min_dst = float("inf") 
 		designated_centroid = None
 		for centroid in centroids:
 			# Calculate what centroid is the closest to a point
