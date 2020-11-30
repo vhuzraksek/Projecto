@@ -108,7 +108,7 @@ def run_kmeans(centroids, points, MAX_ITER):
 def main():
 	K, N, d, MAX_ITER, points = parse_input()
 	centroids, points_to_centroids = init_centroids(points, K, d)
-	centroids = run_kmeans(centroids, points_to_centroids, MAX_ITER):
+	centroids = run_kmeans(centroids, points_to_centroids, MAX_ITER)
 	for centroid in centroids:
 		print(",".join([str(axis) for axis in centroid.center]))
 
