@@ -86,7 +86,7 @@ int mapInputCentroid(int K, int N, int d, double **input, double **centroids, in
 
     /*Temp vars 2A*/
     double minDistance,currentDistance;
-    int minCentroidIndex;
+    int minCentroidIndex=0;
     int changeHappened=FALSE;
     double* diffResult;
 
@@ -144,9 +144,9 @@ void updateCentroids(int K, int N, int d, double **input, double **centroids, in
 
 /* Logic of the kmeans calculation */
 void kmeans(int K, int N, int d, int MAX_ITER, double** input, double** centroids){
-    int iter, i;
+    int iter;
     int changeHappened=TRUE;
-    double** input2CentMapping;
+    int* input2CentMapping;
 
     /*1. malloc & init*/
     input2CentMapping = (int *)malloc(N * sizeof(int));
@@ -154,7 +154,7 @@ void kmeans(int K, int N, int d, int MAX_ITER, double** input, double** centroid
     init_input2CentMapping(input2CentMapping, N);
 
     /*2. Iterations*/
-    for (iter = 0; iter < MAX_ITER || changeHappened; ++iter) {
+    for (iter = 0; iter < MAX_ITER && changeHappened; ++iter) {
         changeHappened = mapInputCentroid(K, N, d, input, centroids, input2CentMapping);
         updateCentroids(K, N, d, input, centroids, input2CentMapping);
     }
@@ -164,7 +164,8 @@ void kmeans(int K, int N, int d, int MAX_ITER, double** input, double** centroid
 
 static int py2CMat(PyObject* pyMat, double** mat){
     int i,j,m,n;
-    PyObject* pyVec,pyItem;
+    PyObject* pyVec;
+    PyObject* pyItem;
     /* Is it a list? */
     if (!PyList_Check(pyMat))
         return FALSE;
@@ -173,13 +174,14 @@ static int py2CMat(PyObject* pyMat, double** mat){
     /* Go over each item of the list and reduce it */
     for (i = 0; i < n; i++) {
         pyVec = PyList_GetItem(pyMat, i);
-        if (!PyList_Check(item)){  /* We only print lists */
+        if (!PyList_Check(pyVec)){  /* We only print lists */
             return FALSE;
         }
-        m=PyList_Size(pyVec)
+        m = PyList_Size(pyVec);
         for (j = 0; j < m; j++) {
-            pyItem = PyList_GetItem(pyVector, j);
+            pyItem = PyList_GetItem(pyVec, j);
             mat[i][j] = PyFloat_AsDouble(pyItem);
+    
             if (mat[i][j]  == -1 && PyErr_Occurred()){
                 /* float too big to fit in a C double, bail out */
                 puts("Error parsing a list to C matrix");
@@ -190,41 +192,52 @@ static int py2CMat(PyObject* pyMat, double** mat){
     return TRUE;
 }
 
-static PyObject* c2pyMat(double** mat,n,m){
-    int i, j, m, n;
-    PyObject* pyItem, pyVec, pyMat;
-    pyMat = PyList_New(n*sizeof(int));
+static PyObject* c2pyMat(double** mat, int n, int m){
+    int i, j;
+    PyObject *pyItem, *pyVec, *pyMat;
+    pyMat = PyList_New(n);
     for (i=0;i<n;i++){
-        pyVec = PyList_New(m*sizeof(double));
+        pyVec = PyList_New(m);
         for (j=0;j<m;j++){
-            pyItem = Py_BuildValue("f", mat[n][m]);
-            PyList_Append(*pyVec, *pyItem);
+    
+            pyItem = Py_BuildValue("d", mat[i][j]);
+            PyList_Append(pyVec, pyItem);
         }
-        PyList_Append(*pyMat, *pyVec);
+
+        PyList_Append(pyMat, pyVec);
     }
     return pyMat;
 }
 
 static PyObject * kmeans_capi(PyObject* self, PyObject* args){
+    int i;
     int K, N, d, MAX_ITER;
     double** input;
     double** centroids;
-    PyObject tempItem;
+    PyObject * tempItem;
     PyObject * pyInput;
     PyObject * pyCentroids;
     PyObject * pyResultCentroids;
 
     /*Get args*/
-    if (PyArg_ParseTuple(args,"iOO", &MAX_ITER, &pyInput, &pyCentroids)){
+    if (!PyArg_ParseTuple(args,"iOO", &MAX_ITER, &pyInput, &pyCentroids)){
+        return NULL;
+    }
+    /*Get sizes*/
+    if (!PyList_Check(pyInput)) {
+        PyErr_BadInternalCall();
         return NULL;
     }
 
-    /*Get sizes*/
+    if (!PyList_Check(pyCentroids)) {
+        PyErr_BadInternalCall();
+        return NULL;
+    }
+
     N = PyList_Size(pyInput);
     K = PyList_Size(pyCentroids);
     tempItem = PyList_GetItem(pyInput, 0); /*Item for getting the dimension*/
     d = PyList_Size(tempItem);
-
 
     /*malloc & init*/
     input = (double **)malloc(N * sizeof(double*));
@@ -239,23 +252,22 @@ static PyObject * kmeans_capi(PyObject* self, PyObject* args){
         centroids[i] = (double *)malloc(d * sizeof(double));
         assert(centroids[i]!=NULL);
     }
-
     /*Copy Python matrices to C Matrices*/
     py2CMat(pyInput,input);
     py2CMat(pyCentroids,centroids);
 
     /*Actual execution*/
     kmeans(K, N, d, MAX_ITER, input, centroids);
-
-    pyResultCentroids = c2pyMat(centroids,K,d);
-    free_double_mat(input, N);
+    pyResultCentroids = c2pyMat(centroids, K, d);
+    free_double_mat(input, N);   
     free_double_mat(centroids, K);
     return pyResultCentroids;
 }
+
 static PyMethodDef capiMethods[] = {
         {"kmeans",
                 (PyCFunction) kmeans_capi,
-                METHVARARGS,
+                METH_VARARGS,
                 PyDoc_STR("Solve K-Means with initial Centroids pre-set."),
             },
         {NULL, NULL, 0, NULL}

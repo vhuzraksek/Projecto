@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import pandas as pd
+from mykmeanssp import kmeans
 
 def init_centroids(points, K):
 	# Main logic of the function
@@ -61,16 +62,18 @@ def parse_csv(csv_path, dims, obs_num):
 	assert len(df.columns) == dims, "Input file had wrong number of dimensions per point"
 	return df.to_numpy()
 
-def pass_data(centroids, points, MAX_ITER):
-	# Use this method to pass on the data to the C extensions
-	print(centroids)
-	pass
+def print_centroids(centroids):
+	for centroid in centroids:
+		print(centroid)
 
 def main():
 	np.random.seed(0)
 	K, MAX_ITER, points = parse_args()
 	centroids = init_centroids(points, K)
-	pass_data(centroids, points, MAX_ITER)
+	print(type(points))
+	centroids = kmeans(MAX_ITER, points.tolist(), centroids)
+	print(type(centroids))
+	print_centroids(centroids)
 
 
 if __name__ == "__main__":
