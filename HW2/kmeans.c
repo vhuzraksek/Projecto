@@ -195,11 +195,10 @@ static int py2CMat(PyObject* pyMat, double** mat){
 static PyObject* c2pyMat(double** mat, int n, int m){
     int i, j;
     PyObject *pyItem, *pyVec, *pyMat;
-    pyMat = PyList_New(n);
+    pyMat = PyList_New(0);
     for (i=0;i<n;i++){
-        pyVec = PyList_New(m);
+        pyVec = PyList_New(0);
         for (j=0;j<m;j++){
-    
             pyItem = Py_BuildValue("d", mat[i][j]);
             PyList_Append(pyVec, pyItem);
         }
@@ -255,12 +254,14 @@ static PyObject * kmeans_capi(PyObject* self, PyObject* args){
     /*Copy Python matrices to C Matrices*/
     py2CMat(pyInput,input);
     py2CMat(pyCentroids,centroids);
-
+    
     /*Actual execution*/
     kmeans(K, N, d, MAX_ITER, input, centroids);
     pyResultCentroids = c2pyMat(centroids, K, d);
-    free_double_mat(input, N);   
+
+	free_double_mat(input, N);   
     free_double_mat(centroids, K);
+
     return pyResultCentroids;
 }
 

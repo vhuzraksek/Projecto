@@ -5,23 +5,35 @@ from mykmeanssp import kmeans
 
 def init_centroids(points, K):
 	# Main logic of the function
+	indices = []
 	centroids = []
-	centroids.append(create_random_centroid(points))
+	centroid, idx = create_random_centroid(points)
+	centroids.append(centroid)
+	indices.append(idx)
 	for j in range(K - 1):
-		centroids.append(create_next_centroid(centroids, points))
-	return centroids
+		centroid, idx = create_next_centroid(centroids, points)
+		centroids.append(centroid)
+		indices.append(idx)
+	return centroids, indices
 
-def create_random_centroid(points, probs=[]):
+def create_random_centroid(points, probs=None):
 	# Add random point to centroid list using weighted choice
-	idx = np.random.choice(len(points), 1, probs)
-	return points[idx]
+	idx = np.random.choice(len(points), 1, p=probs)
+	return points[idx[0]], idx[0]
+
+def calc_dist_squared(vecA, vecB):
+	assert len(vecA) == len(vecB), "Something went wrong, tried calculating distance of two non-equal dimensions vectors."
+	summ = 0
+	for idx in range(len(vecA)):
+		summ += ((vecA[idx] - vecB[idx]) ** 2)
+	return summ
 
 def build_dist_list(centroids, points):
 	# Build distance list - each points will be mapped to the distance to the closest centroid
 	min_dists = []
 	for point in points:
-		dists = np.array([np.linalg.norm(point - centroid, 2) for centroid in centroids])
-		min_dists.append(dists[np.argmin(dists)])
+		dists = [calc_dist_squared(centroid, point) for centroid in centroids]
+		min_dists.append(min(dists))
 	return min_dists
 
 def build_prob_list(dists):
@@ -60,20 +72,19 @@ def parse_csv(csv_path, dims, obs_num):
 	df = pd.read_csv(csv_path, header=None)
 	assert len(df) == obs_num, "Input file had wrong number of observations"
 	assert len(df.columns) == dims, "Input file had wrong number of dimensions per point"
-	return df.to_numpy()
+	return df.to_numpy().tolist()
 
-def print_centroids(centroids):
+def print_output(centroids, indices):
+	print(*indices, sep=",")
 	for centroid in centroids:
-		print(centroid)
+		print(*[np.float64(axis) for axis in centroid], sep=",")
 
 def main():
 	np.random.seed(0)
 	K, MAX_ITER, points = parse_args()
-	centroids = init_centroids(points, K)
-	print(type(points))
-	centroids = kmeans(MAX_ITER, points.tolist(), centroids)
-	print(type(centroids))
-	print_centroids(centroids)
+	centroids, indices = init_centroids(points, K)
+	centroids = kmeans(MAX_ITER, points, centroids)
+	print_output(centroids, indices)
 
 
 if __name__ == "__main__":
