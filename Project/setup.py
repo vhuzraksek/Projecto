@@ -11,7 +11,23 @@ setup(
     ext_modules=[
         Extension(
             'mykmeanssp',
-            ['kmeans.c'],
+            ['kmeans.c', 'matutils.c'],
+        ),
+    ]
+)
+
+setup(
+    name='myspectral',
+    version='0.1.0',
+    author="Guy Dekel and David Molina",
+    description="Api for Nomralized spectral clustering algorithm",
+    install_requires=['invoke'],
+    packages=find_packages(),
+
+    ext_modules=[
+        Extension(
+            'myspectral',
+            ['spectral.c', 'matutils.c'],
         ),
     ]
 )

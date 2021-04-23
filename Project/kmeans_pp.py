@@ -1,3 +1,4 @@
+import sys
 import argparse
 import numpy as np
 import pandas as pd
@@ -57,5 +58,8 @@ def print_output(centroids, indices):
 
 def kmeans_main(K, points):
 	centroids, indices = init_centroids(points, K)
-	centroids = kmeans(MAX_ITER, points, centroids)
-	print_output(centroids, indices)
+	ret = kmeans(MAX_ITER, points, centroids)
+	if ret[-1] == -1:
+		sys.exit("Execution of Kmeans failed due to bad malloc")
+	centroids, mapping = ret[0], ret[1]
+	return centroids, mapping
