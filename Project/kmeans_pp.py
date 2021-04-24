@@ -51,15 +51,10 @@ def create_next_centroid(centroids, points):
 	probs = build_prob_list(dists)
 	return create_random_centroid(points, probs)
 
-def print_output(centroids, indices):
-	print(*indices, sep=",")
-	for centroid in centroids:
-		print(*[np.float64(axis) for axis in centroid], sep=",")
-
 def kmeans_main(K, points):
 	centroids, indices = init_centroids(points, K)
 	ret = kmeans(MAX_ITER, points, centroids)
 	if ret[-1] == -1:
 		sys.exit("Execution of Kmeans failed due to bad malloc")
 	centroids, mapping = ret[0], ret[1]
-	return centroids, mapping
+	return mapping

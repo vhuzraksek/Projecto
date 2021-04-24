@@ -30,7 +30,9 @@ int mapInputCentroid(int K, int N, int d, double **input, double **centroids, in
 
     /*1. malloc & init*/
     diffResult = (double *)malloc(N * sizeof(double));
-    assert(diffResult!=NULL);
+    if (diffResult == NULL){
+    	return -1;
+    }
 
     /*A) Assign inputs to centroids*/
     for (i = 0; i < N; ++i) {
@@ -53,7 +55,7 @@ int mapInputCentroid(int K, int N, int d, double **input, double **centroids, in
     return changeHappened;
 }
 
-void updateCentroids(int K, int N, int d, double **input, double **centroids, int* input2CentMapping) {
+int updateCentroids(int K, int N, int d, double **input, double **centroids, int* input2CentMapping) {
     /*Iteration Variables*/
     int i, j;
 
@@ -63,7 +65,9 @@ void updateCentroids(int K, int N, int d, double **input, double **centroids, in
 
     /*1. malloc & init*/
     newCentroidVec = (double *)malloc(d * sizeof(double));
-    assert(newCentroidVec!=NULL);
+    if (newCentroidVec == NULL){
+    	return -1;
+    }
 
     for (j = 0; j < K; ++j) {
         clusterSize=0;
@@ -78,10 +82,11 @@ void updateCentroids(int K, int N, int d, double **input, double **centroids, in
         vecAssign(newCentroidVec,centroids[j], d);
     }
     free(newCentroidVec);
+    return 0;
 }
 
 /* Logic of the kmeans calculation */
-void kmeans(int K, int N, int d, int MAX_ITER, double** input, double** centroids, int* input2CentMapping){
+int kmeans(int K, int N, int d, int MAX_ITER, double** input, double** centroids, int* input2CentMapping){
     int iter;
     int changeHappened=TRUE;
 
@@ -91,13 +96,19 @@ void kmeans(int K, int N, int d, int MAX_ITER, double** input, double** centroid
     /*2. Iterations*/
     for (iter = 0; iter < MAX_ITER && changeHappened; ++iter) {
         changeHappened = mapInputCentroid(K, N, d, input, centroids, input2CentMapping);
-        updateCentroids(K, N, d, input, centroids, input2CentMapping);
+        if (changeHappened == -1){
+        	return -1;
+        }
+        if (updateCentroids(K, N, d, input, centroids, input2CentMapping) == -1){
+        	return -1;
+        }
     }
-    /*Free all local memory*/
+    return 0;
 }
 
 static PyObject * kmeans_capi(PyObject* self, PyObject* args){
 	int exitcode = 1;
+    int retval;
     int i;
     int K, N, d, MAX_ITER;
     int* input2CentMapping;
@@ -144,7 +155,12 @@ static PyObject * kmeans_capi(PyObject* self, PyObject* args){
     py2CMat(pyCentroids,centroids);
     
     /*Actual execution*/
-    kmeans(K, N, d, MAX_ITER, input, centroids, input2CentMapping);
+    retval = kmeans(K, N, d, MAX_ITER, input, centroids, input2CentMapping);
+    if (retval == -1){
+        exitcode = -1;
+        goto cleanup;
+    }
+
     pyResultCentroids = c2pyMat(centroids, K, d);
 
     // pyInput2CentMapping = c2pyMat(input2CentMapping, N, 1);
