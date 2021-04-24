@@ -114,7 +114,11 @@ int modified_GS(int N, double** aMat, double** qMat, double** rMat){
         getCol(N,  i, uMat, tempVec);
         rMat[i][i] = sqrt(norm2(tempVec, N));
         for (j = 0; j < N; j++){
-            qMat[j][i] = uMat[j][i] / rMat[i][i];
+            if (rMat[i][i] == 0){
+                qMat[j][i] = 0;
+            } else {
+                qMat[j][i] = uMat[j][i] / rMat[i][i];
+            }
         }
         for (j = i + 1; j < N; j++){
             getCol(N,  i, qMat, tempVec);

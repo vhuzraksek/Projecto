@@ -29,7 +29,7 @@ int mapInputCentroid(int K, int N, int d, double **input, double **centroids, in
     double* diffResult;
 
     /*1. malloc & init*/
-    diffResult = (double *)malloc(N * sizeof(double));
+    diffResult = (double *)malloc(d * sizeof(double));
     if (diffResult == NULL){
     	return -1;
     }
@@ -91,6 +91,7 @@ int kmeans(int K, int N, int d, int MAX_ITER, double** input, double** centroids
     int changeHappened=TRUE;
 
     /*1. malloc & init*/
+
     init_input2CentMapping(input2CentMapping, N);
 
     /*2. Iterations*/
@@ -120,7 +121,6 @@ static PyObject * kmeans_capi(PyObject* self, PyObject* args){
     PyObject * pyResultCentroids;
     PyObject * pyInput2CentMapping;
     PyObject * pyReturn = PyList_New(0);
-
     /*Get args*/
     if (!PyArg_ParseTuple(args,"iOO", &MAX_ITER, &pyInput, &pyCentroids)){
         return NULL;
@@ -135,7 +135,6 @@ static PyObject * kmeans_capi(PyObject* self, PyObject* args){
         PyErr_BadInternalCall();
         return NULL;
     }
-
     N = PyList_Size(pyInput);
     K = PyList_Size(pyCentroids);
     tempItem = PyList_GetItem(pyInput, 0); /*Item for getting the dimension*/
@@ -149,7 +148,6 @@ static PyObject * kmeans_capi(PyObject* self, PyObject* args){
         exitcode = -1;
         goto cleanup;
     }
-
     /*Copy Python matrices to C Matrices*/
     py2CMat(pyInput,input);
     py2CMat(pyCentroids,centroids);
@@ -168,7 +166,7 @@ static PyObject * kmeans_capi(PyObject* self, PyObject* args){
     for (i = 0; i < N; i++){
     	PyList_Append(pyInput2CentMapping, Py_BuildValue("i", input2CentMapping[i]));
     }
-
+    
     PyList_Append(pyReturn, pyResultCentroids);
     PyList_Append(pyReturn, pyInput2CentMapping);
     
